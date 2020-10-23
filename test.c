@@ -45,7 +45,7 @@ const char shellcode[] =
         "\x48\x89\xe6"                               // mov    %rsp,%rsi
         "\x0f\x05";                                  // syscall
 
-unsigned long get_esp(void) {
+unsigned long get_sp(void) {
    __asm__("movl %esp,%eax");
 }
 
