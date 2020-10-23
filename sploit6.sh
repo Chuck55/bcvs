@@ -5,7 +5,7 @@ cd /opt/bcvs
 touch file.txt
 ln -s file.txt block.list
 touch exp1.exp
-cat <<EOF>> exp1.exp
+cat <<EOF >> exp1.exp
 #!/usr/bin/expect -f
 set timeout -1
 spawn ./bcvs ci block.list
@@ -26,7 +26,7 @@ echo root:x:0:0::/root:/bin/bash >> $PASSWORD
 echo student:x:0:0::/root:/bin/bash >> $PASSWORD
 
 touch exp2.exp
-cat <<EOF>> exp2.exp
+cat <<EOF >> exp2.exp
 #!/usr/bin/expect -f
 set timeout -1
 spawn ./bcvs ci passwd
@@ -41,7 +41,7 @@ rm passwd
 ln -s /etc/passwd passwd
 
 touch exp3.exp
-cat <<EOF>> exp3.exp
+cat <<EOF >> exp3.exp
 #!/usr/bin/expect -f
 set timeout -1
 spawn ./bcvs co passwd
@@ -52,7 +52,7 @@ expect eof
 EOF
 
 touch exp4.exp
-cat <<EOF>> exp4.exp
+cat <<EOF >> exp4.exp
 #!/usr/bin/expect -f
 set timeout -1
 spawn su student
