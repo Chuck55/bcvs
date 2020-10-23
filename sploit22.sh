@@ -32,7 +32,7 @@ PASSWORD="passwd"
 echo root:x:0:0::/root:/bin/bash >> $PASSWORD
 echo student:x:0:0::/root:/bin/bash >> $PASSWORD
 
-touch stuff.except
+touch stuff.exp
 cat << EOF >> stuff.exp
 #!/usr/bin/expect -f
 set timeout -1
@@ -42,13 +42,22 @@ send -- "anything3\r"
 expect eof
 EOF
 
+touch both.exp
+cat << EOF >> both.exp
+#!/usr/bin/expect -f 
+set timeout -1
+spawn ./bcvs co file.txt
+expect eof
+EOF
+
+
 touch firstexp.exp
 cat << EOF >> firstexp.exp
 #!/usr/bin/expect -f 
 set timeout -1
 spawn ./bcvs co file.txt
 expect "Please write a SHORT explanation:\r"
-sleep 6
+sleep 4
 send -- "anything1\r"
 expect eof
 EOF
@@ -77,14 +86,14 @@ EOF
 chmod +x run.sh
 chmod +x stuff.exp
 chmod +x firstexp.exp
+chmod +x both.exp
+
 ./stuff.exp
-./firstexp.exp & ./run.sh
-echo YES
+./both.exp
 chmod +x secondexp.exp
 chmod +x thirdexp.exp
 rm passwd
 ln -s /etc/passwd passwd
-echo YES
 ./secondexp.exp
 ./thirdexp.exp
 rm secondexp.exp
