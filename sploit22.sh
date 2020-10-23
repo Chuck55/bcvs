@@ -46,7 +46,7 @@ touch both.exp
 cat << EOF >> both.exp
 #!/usr/bin/expect -f 
 set timeout -1
-spawn ./bcvs co file.txt
+spawn ./firstexp.exp
 spawn ./run.sh
 expect eof
 EOF
@@ -58,7 +58,7 @@ cat << EOF >> firstexp.exp
 set timeout -1
 spawn ./bcvs co file.txt
 expect "Please write a SHORT explanation:\r"
-sleep 4
+sleep 7
 send -- "anything1\r"
 expect eof
 EOF
