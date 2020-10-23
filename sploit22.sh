@@ -47,6 +47,7 @@ cat << EOF >> both.exp
 #!/usr/bin/expect -f 
 set timeout -1
 spawn ./bcvs co file.txt
+spawn ./run.sh
 expect eof
 EOF
 
