@@ -36,13 +36,14 @@ What happens when an ordinary user runs sploit2.sh:
 
 1. The script will first navigate to the /opts/bcvs directory
 2. The script will create both the python file that creates a symlink, and the empty file.txt
-3. The script will create the script that will run the python program
+3. The script will create the script run.sh that will run the python program, but will first sleep for a certain amount of time
 4. We then check in file.txt into .bcvs with an log input of "HELLO"
 5. The script will create a passwd file, create a variable that stores the path to passwd, and stores the root permissions into the variable
-6. The script will create the expect script which checks in the passwd file with a log input "anything3/r"
-7. The script will create another expect script, which will run both the expect scrip that checks out file.txt and the script that creates a symlink between file.txt and .bcvs/block.list
-8. The script will then create the expect script that will check out file.txt, but will sleep when expecting a certain input, so that the symlink can be created. Afterwords, will send "anything/r"
-9. The script will create an expect script that will log the student out and back in to refresh the permissions
+6. The script will create the expect script stuff.exp which checks in the passwd file with a log input "anything3/r"
+7. The script will create another expect script both.exp, which will run both the expect scrip that checks out file.txt and the script that creates a symlink between file.txt and .bcvs/block.list
+8. The script will then create the expect script firstexp.exp that will check out file.txt, but will sleep when expecting a certain input, so that the symlink can be created. Afterwords, will send "anything/r"
+9. The script will then create an expect script secondexp.exp that will check out the passwd file that we checked in earlier
+9. The script will create an expect script thirdexp.exp that will log the student out and back in to refresh the permissions
 10. The script will run the command chmod +X on all the scripts
 11. The script will run the script that checks in the passwd file
 12. The script will run the script that runs the script that checks out the file.txt and creates a symlink

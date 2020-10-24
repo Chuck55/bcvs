@@ -18,18 +18,15 @@ a new passwd file that is a symlink to the /etc/passwd file, so that now, when w
 
 Once we do this, all we need to do now is to log out of our user, which refreshes the permssions of our student account, and we now have root permissions.
 
-What happens when an ordinary user runs sploit4.sh:
+What happens when an ordinary user runs sploit5.sh:
 
 1. The script will first navigate to the /opts/bcvs directory
 2. The script will create a symlink between a file called block.list and another file called file.txt
-3. We then check in file.txt into .bcvs with an log input of "HELLO"
-4. The script will then create an expect script that will check in block.list and run it
-5. The script will create a passwd file, create a variable that stores the path to passwd, and stores the permissions into the variable
-6. The script will create the expect script which checks in the passwd file with a log input "anything3/r"
-7. The script will then create a expect script that will check in the passwd file and run it
-8. The script will then remove the passwd file and create a symlink between passwd and etc/passwd
-9. The script will then create an expect script that will check out the passwd file, replacing the contents of /etc/passwd with the contents of the previous passwd file
-10. The script will create an expect script that will log the student out and back in to refresh the permissions
-11. The script will run the expect script that checks in the passwd file
-13. The script will run the expect script that checks out the passwd file, so that the contents of the previous passwd file are overwritten to the etc/passwd file, as the passwd file now is a symlink
-14. The script will run the script that will log the user out and back in to refresh permissions
+3. The script will then create an expect script exp1.exp that will check in block.list and run it
+4. The script will create a passwd file, create a variable that stores the path to passwd, and stores the permissions into the file
+5. The script will create the expect script exp2.exp which checks in the passwd file with a log input "anything/r" and will run the script
+6. The script will then remove the passwd file and create a symlink between passwd and etc/passwd
+7. The script will then create an expect script exp3.exp that will check out the passwd file, replacing the contents of /etc/passwd with the contents of the previous passwd file
+8. The script will create an expect script exp4.exp that will log the student out and back in to refresh the permissions
+9. The script will run the expect script that checks out the passwd file, so that the contents of the previous passwd file are overwritten to the etc/passwd file, as the passwd file now is a symlink
+10. The script will run the script that will log the user out and back in to refresh permissions
